@@ -2,7 +2,7 @@ import json
 from django.shortcuts import render
 from django.http     import JsonResponse
 
-# Create your views here.
+#음.....연우님 CRUD2 너무어려워요 ㅜㅜ	
 
 
 from django.views    import View
@@ -20,7 +20,7 @@ class OwnersView(View): # 장고의 view를 상속받아 사용
             age = data['age'],
         )
         return JsonResponse({'MESSAGE':'SUCCESS'} , status = 201)
-        # http -v POST 127.0.0.1:8000/owners name='시고르자브' email='c@gmail.com' age=23 
+        # http -v POST 127.0.0.1:8000/owners/owners name='시고르자브' email='c@gmail.com' age=27
 
 class DogsView(View): # 장고의 view를 상속받아 사용  
     # post
@@ -36,30 +36,52 @@ class DogsView(View): # 장고의 view를 상속받아 사용
         return JsonResponse({'MESSAGE':'SUCCESS'} , status = 201)
 #http -v POST 127.0.0.1:8000/owners/dogs name='홈런볼' age=30 owner='제이크'
 
-# get
-    def get(self,request): # 주인 리스트 
-        owners = Owner.objects.all() #저장된데이터베이스에서 객체를 다 가지고 와서
-        results = []
-        for owner in owners: #하나씩 돌면서 results에 추가
-            dogs = owner.dogs_set.all() #역참조하기 : 테이블명소문자_set
-            dog_list = []
-
-            for dog in dogs:
-                dog_info = { 
-                        'name' : dog.name,
-                        'age' : dog.age
-                    }
-
-                dog_list.append(dog_info) 
+class GetOwners(View):
+    def get(self, request):              
+        owners = Owner.objects.all()	  #음.....연우님 CRUD2 너무어려워요 ㅜㅜ	
+        results=[]
+        for owner in owners:			
             results.append(
                 {
-                    "name" : owner.name, # 외래키로 다 연결되어있음
-                    "email" : owner.email,
-                    "age" :  owner.age,
-                    'dog' : dog_list
+                    "name" : owner.name,
+                    "email": owner.email,
+                    "age"  : owner.age
                 }
             )
-        return JsonResponse({'results': results },status=200 )
+        return JsonResponse({'resutls':results}, status=200)
 
-        # http -v GET 127.0.0.1:8000/owners/owners
+#path 지정을 자꾸 잘못해서 class를 제대로 시행하는데 어려웠어요 ㅜㅜ 자꾸 오류가 어쩌다 끼워 맞췄는데 ... 잘할수 있겠죠? 음 .. ㅎ 항상 감사합니다  :) 채팅이 느려요 빨라지도록 노력해볼게요!
 
+class GetDogs(View):
+    def get(self, request):	
+        dogs = Dog.objects.all()	
+        results=[]
+        for dog in dogs:		
+            results.append(
+                {
+                    "name"   : dog.name,	
+                    "age"    : dog.age,
+                    "owner"  : dog.owner.name
+                }
+            )
+        return JsonResponse({'resutls':results}, status=200)
+
+class GetDogOwner(View):
+    def get(self, request):
+        owners = Owner.objects.all()
+        results=[]
+
+        for owner in owners:
+            list= []		
+            for dog in Dog.objects.filter(owner = owner).values('name', 'age'):
+                list.append(dog) 	
+            results.append(
+                {
+                    "name" : owner.name,
+                    "age"  : owner.age,
+                    "dogs" : list
+                }
+            )
+        
+        return JsonResponse({'resutls':results}, status=200)
+ 
